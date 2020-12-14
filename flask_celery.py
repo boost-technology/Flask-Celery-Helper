@@ -181,20 +181,12 @@ class Celery(CeleryClass):
     initialized like normal.
     """
 
-    def __init__(self, app=None):
-        """If app argument provided then initialize celery using application config values.
-
-        If no app argument provided you should do initialization later with init_app method.
-
-        :param app: Flask application instance.
-        """
+    def __init__(self, *args, **kwargs):
         self.original_register_app = _state._register_app  # Backup Celery app registration function.
         _state._register_app = lambda _: None  # Upon Celery app registration attempt, do nothing.
-        super(Celery, self).__init__()
-        if app is not None:
-            self.init_app(app)
+        super(Celery, self).__init__(*args, **kwargs)
 
-    def init_app(self, app):
+    def init_app(self, app, *args, **kwargs):
         """Actual method to read celery settings from app configuration and initialize the celery instance.
 
         :param app: Flask application instance.
@@ -207,11 +199,11 @@ class Celery(CeleryClass):
         app.extensions['celery'] = _CeleryState(self, app)
 
         # Instantiate celery and read config.
-        super(Celery, self).__init__(app.import_name, broker=app.config['CELERY_BROKER_URL'])
+        super(Celery, self).__init__(app.import_name, *args, **kwargs)
 
         # Set result backend default.
-        if 'CELERY_RESULT_BACKEND' in app.config:
-            self._preconf['CELERY_RESULT_BACKEND'] = app.config['CELERY_RESULT_BACKEND']
+        if 'backend' in kwargs:
+            self._preconf['result_backend'] = kwargs['backend']
 
         self.conf.update(app.config)
         task_base = self.Task
