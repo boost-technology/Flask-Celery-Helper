@@ -201,10 +201,6 @@ class Celery(CeleryClass):
         # Instantiate celery and read config.
         super(Celery, self).__init__(app.import_name, *args, **kwargs)
 
-        # Set result backend default.
-        if 'backend' in kwargs:
-            self._preconf['result_backend'] = kwargs['backend']
-
         self.conf.update(app.config)
         task_base = self.Task
 
